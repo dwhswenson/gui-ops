@@ -13,7 +13,7 @@ First you will need to create Python files from the `.ui` files. Try this bit
 of bash magic: 
 
 ```bash
-for file in *ui; do pyuic5 "$file" -o "${file%.ui}.py"; done
+for file in gui-ops/views/*ui; do pyuic5 "$file" -o "${file%.ui}.py"; done
 ```
 
 Then you can run the main Python scripts. (All of this will probably be done by
