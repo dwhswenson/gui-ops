@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>161</height>
+    <height>200</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>120</y>
+     <y>160</y>
      <width>361</width>
      <height>32</height>
     </rect>
@@ -96,11 +96,89 @@
     <string>Parameters:</string>
    </property>
   </widget>
+  <widget class="QComboBox" name="extract_style">
+   <property name="geometry">
+    <rect>
+     <x>230</x>
+     <y>90</y>
+     <width>151</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <item>
+    <property name="text">
+     <string>0 - Global Data</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>1 - Per-atom Data</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>2 - Local Data</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QComboBox" name="extract_type">
+   <property name="geometry">
+    <rect>
+     <x>230</x>
+     <y>120</y>
+     <width>151</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <item>
+    <property name="text">
+     <string>0 - Scalar</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>1 - Vector</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>2 - Array</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>130</x>
+     <y>90</y>
+     <width>91</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Compute style:</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_4">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>120</y>
+     <width>71</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Return type:</string>
+   </property>
+  </widget>
  </widget>
  <tabstops>
   <tabstop>cv_type</tabstop>
   <tabstop>name</tabstop>
   <tabstop>parameters</tabstop>
+  <tabstop>extract_style</tabstop>
+  <tabstop>extract_type</tabstop>
  </tabstops>
  <resources/>
  <connections>

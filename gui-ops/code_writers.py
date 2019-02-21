@@ -32,6 +32,7 @@ class NamedObjectCodeWriter(object):
         self.__class__.creation_counter += 1
         self.count = self.__class__.creation_counter
         self._object = None
+        self.base = "paths"
 
     @property
     def bound_name(self):
@@ -61,8 +62,9 @@ class NamedObjectCodeWriter(object):
     @property
     def code(self):
         """code to instantiate this object and bind it to a name"""
-        code_layout = "{bind_str} = paths.{class_name}{call_str}{name_str}"
+        code_layout = "{bind_str} = {base}.{class_name}{call_str}{name_str}"
         code_str = code_layout.format(bind_str=self.bound_name,
+                                      base=self.base,
                                       class_name=self.class_name,
                                       call_str=self._call_str,
                                       name_str=self._name_str)
@@ -100,7 +102,7 @@ class NamedObjectCodeWriter(object):
 
 
 class CVCodeWriter(NamedObjectCodeWriter):
-    object_inputs = ['f']
+    object_inputs = ['f', 'engine']
     bound_label = "cv"
     creation_counter = 0
     def __init__(self, name, class_name, **kwargs):
@@ -109,6 +111,7 @@ class CVCodeWriter(NamedObjectCodeWriter):
         super(CVCodeWriter, self).__init__(class_name, name=name, **kwargs)
         self.kwargs['name'] = self.name
         self.name = None
+        self.base = "ops_lammps"  #TODO: modify this in the controller?
 
 
 class VolumeCodeWriter(NamedObjectCodeWriter):
@@ -128,6 +131,22 @@ class StorageWriter(object):
     def code(self):
         storage_str = "storage = paths.Storage('{filename}', mode='{mode}')"
         return storage_str.format(filename=self.filename, mode=self.mode)
+
+
+class EngineWriter(object):
+    def __init__(self, script):
+        self.script = script
+        # TODO: don't hard-code these
+        self.options = {'n_steps_per_frame': 200,
+                        'n_frames_max': 500000}
+
+    @property
+    def code(self):
+        lines = "with open('" + self.script + "', 'r') as f:\n"
+        lines += "    data = f.read()\n"
+        lines += "engine = ops_lammps.Engine(inputs=data, options="
+        lines += str(self.options) + ")\n"
+        return lines
 
 
 class RandomizerWriter(object):

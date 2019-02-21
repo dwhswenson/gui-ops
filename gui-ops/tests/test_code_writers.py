@@ -1,6 +1,6 @@
 import pytest
 
-from code_writers import *
+from ..code_writers import *
 
 class AbstractCodeWriterTester(object):
     def test_bound_name(self):

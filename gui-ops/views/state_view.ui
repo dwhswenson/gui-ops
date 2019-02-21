@@ -85,55 +85,55 @@
        <string>Periodic?</string>
       </property>
      </widget>
-     <widget class="QDoubleSpinBox" name="lambda_min">
-      <property name="geometry">
-       <rect>
-        <x>260</x>
-        <y>20</y>
-        <width>68</width>
-        <height>24</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QDoubleSpinBox" name="lambda_max">
-      <property name="geometry">
-       <rect>
-        <x>370</x>
-        <y>20</y>
-        <width>68</width>
-        <height>24</height>
-       </rect>
-      </property>
-     </widget>
      <widget class="QWidget" name="period_info" native="true">
       <property name="geometry">
        <rect>
-        <x>260</x>
+        <x>220</x>
         <y>50</y>
-        <width>201</width>
+        <width>241</width>
         <height>21</height>
        </rect>
       </property>
-      <widget class="QDoubleSpinBox" name="period_min">
+      <widget class="QLineEdit" name="period_max">
+       <property name="geometry">
+        <rect>
+         <x>120</x>
+         <y>0</y>
+         <width>113</width>
+         <height>21</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="period_min">
        <property name="geometry">
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>68</width>
-         <height>24</height>
+         <width>113</width>
+         <height>21</height>
         </rect>
        </property>
       </widget>
-      <widget class="QDoubleSpinBox" name="period_max">
-       <property name="geometry">
-        <rect>
-         <x>110</x>
-         <y>0</y>
-         <width>68</width>
-         <height>24</height>
-        </rect>
-       </property>
-      </widget>
+     </widget>
+     <widget class="QLineEdit" name="lambda_min">
+      <property name="geometry">
+       <rect>
+        <x>220</x>
+        <y>20</y>
+        <width>113</width>
+        <height>21</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lambda_max">
+      <property name="geometry">
+       <rect>
+        <x>340</x>
+        <y>20</y>
+        <width>113</width>
+        <height>21</height>
+       </rect>
+      </property>
      </widget>
     </widget>
    </widget>
@@ -184,11 +184,7 @@
   <tabstop>name</tabstop>
   <tabstop>scrollArea</tabstop>
   <tabstop>collectivevariable</tabstop>
-  <tabstop>lambda_min</tabstop>
-  <tabstop>lambda_max</tabstop>
   <tabstop>is_periodic</tabstop>
-  <tabstop>period_min</tabstop>
-  <tabstop>period_max</tabstop>
   <tabstop>addCV</tabstop>
  </tabstops>
  <resources/>

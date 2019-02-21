@@ -19,3 +19,17 @@ for file in gui-ops/views/*ui; do pyuic5 "$file" -o "${file%.ui}.py"; done
 Then you can run the main Python scripts. (All of this will probably be done by
 `setup.py` at some point in the future.)
 
+### Requirements
+
+Developed in Python 3.7 and pyqt 5.6. Shouldn't require anything else to run,
+although the resulting OPS file will require the branch for LAMMPS support.
+
+### Tests
+
+Tests use:
+
+* pytest
+* pytest-qt
+* pytest-bdd
+
+Install all of these (pip-installable) and run ???

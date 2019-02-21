@@ -22,8 +22,10 @@ sim = paths.CommittorSimulation(
 
 TRAJECTORY_SETUP = """
 class TrajectorySimulation(paths.PathSimulator):
-    def __init__(self, storage, states, engine, initial_conditions):
+    def __init__(self, storage, states, engine, initial_conditions=None):
         self.storage = storage
+        if initial_conditions is None:
+            initial_conditions = engine.current_snapshot
         self.initial_conditions = initial_conditions
         self.states = states
         self.engine = engine
@@ -43,6 +45,8 @@ class TrajectorySimulation(paths.PathSimulator):
             self.storage.save(self.engine)
             self.storage.save(self.states)
             self.storage.save(self.ensemble)
+
+sim = TrajectorySimulation(storage, states, engine)
 """
 
 MAIN_RUN = """
