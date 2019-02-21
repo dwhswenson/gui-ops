@@ -1,5 +1,27 @@
 class NamedObjectCodeWriter(object):
-    """
+    """Model to capture input from GUI and create OPS code.
+
+    To make things easier, we do everything as kwargs. There are also
+    several special class attributes to be overridden in subclasses (this is
+    an abstract class):
+
+    * ``object_input``: names (keys) that correspond to named objects in the
+      code. These will *not* be quoted as strings in the output.
+    * ``bound_label``: objects will take ``bound_label`` as a prefix when
+      we create code for these things. For example, the first CV created is
+      called ``cv_1``: the ``bound_label`` is ``cv``.
+    * ``creation_counter``: index of how many objects of this type we've
+      made (starts at 0 so first object is 1). Used in code as seen in
+      previous point.
+
+    Parameters
+    ----------
+    class_name : str
+        the name of the class to create; assumed to be ``paths.class_name``
+    name : str or None
+        the object's name; to be added with the ``.named(name)`` approach
+    kwargs : dict
+        everything else
     """
     object_inputs = []
     def __init__(self, class_name, name=None, **kwargs):
@@ -13,6 +35,7 @@ class NamedObjectCodeWriter(object):
 
     @property
     def bound_name(self):
+        """name used for this object in code, e.g., ``cv_1``"""
         bind_str = "{}_{}".format(self.bound_label, str(self.count))
         return bind_str
 
@@ -37,6 +60,7 @@ class NamedObjectCodeWriter(object):
 
     @property
     def code(self):
+        """code to instantiate this object and bind it to a name"""
         code_layout = "{bind_str} = paths.{class_name}{call_str}{name_str}"
         code_str = code_layout.format(bind_str=self.bound_name,
                                       class_name=self.class_name,
@@ -80,6 +104,8 @@ class CVCodeWriter(NamedObjectCodeWriter):
     bound_label = "cv"
     creation_counter = 0
     def __init__(self, name, class_name, **kwargs):
+        # special treatment of name, bc all OPS CVs must take names in
+        # initialization
         super(CVCodeWriter, self).__init__(class_name, name=name, **kwargs)
         self.kwargs['name'] = self.name
         self.name = None
