@@ -28,7 +28,7 @@ class AddObjectFromButton(object):
     dct : dict
         the dictionary storing the result object for parent controllers
         (using names as keys)
-    parent : 
+    parent :
         parent view/controller for the new controller
     modal : bool
         whether the dialog should be modal
@@ -63,6 +63,9 @@ class AddObjectFromButton(object):
             name = self.get_name(result)
             self.add_cv_name_to_ui(name)
             self.dct[name] = result
+
+        if self.parent:
+            self.parent.update_after_add()
         return {name: result}
 
     def add_cv_name_to_ui(self, name):
@@ -136,6 +139,9 @@ class QDialogController(QDialog):
         ui.setupUi(self)
         return ui
 
+    def update_after_add(self):
+        pass  # implement when needed in subclasses
+
 
 class CVController(QDialogController, CreateObjectDialog):
     comboBox_entries = {'LAMMPS Compute': "LAMMPSComputeCV"}
@@ -204,23 +210,53 @@ class StateController(QDialogController, CreateObjectDialog):
         for cv_name in self.cvs:
             self.add_cv_dialog.add_cv_name_to_ui(cv_name)
 
-        # TODO: test each connection
-        self.ui.is_periodic.stateChanged.connect(self.toggle_periodic_view)
-
         # TODO: :test each default behavior
         self._default_nonperiodic()
+        self.toggle_enabled_ok()
+
+        # TODO: test each connection
+        self.ui.is_periodic.stateChanged.connect(self.toggle_periodic_view)
+        ui = self.ui
+        ui_signals = [ui.name.textChanged, ui.is_periodic.stateChanged,
+                      ui.collectivevariable.currentTextChanged,
+                      ui.lambda_min.textChanged, ui.lambda_max.textChanged,
+                      ui.period_min.textChanged, ui.period_max.textChanged]
+        for sig in ui_signals:
+            sig.connect(self.toggle_enabled_ok)
+
 
     def _get_kwargs_from_ui(self):
         cv_name = self.ui.collectivevariable.currentText()
-        periodic = 'Periodic' if self.ui.is_periodic.isChecked() else ''
+        is_periodic = self.ui.is_periodic.isChecked()
+
+        try:
+            cv_bound_name = self.cvs[cv_name].bound_name
+        except KeyError:
+            # not ready to return this yet! Ok should be disabled
+            return {}
+
+        try:
+            lambda_min = float(self.ui.lambda_min.text())
+            lambda_max = float(self.ui.lambda_max.text())
+        except ValueError:
+            return {}
+
+        if is_periodic:
+            try:
+                period_min = float(self.ui.period_min.text())
+                period_max = float(self.ui.period_max.text())
+            except ValueError:
+                return {}
+
+        periodic = 'Periodic' if is_periodic else ''
         kwargs = dict(class_name=periodic + "CVDefinedVolume",
-                      collectivevariable=self.cvs[cv_name].bound_name,
+                      collectivevariable=cv_bound_name,
                       name=self.ui.name.text(),
-                      lambda_min=float(self.ui.lambda_min.text()),
-                      lambda_max=float(self.ui.lambda_max.text()))
-        if self.ui.is_periodic.isChecked():
-            kwargs.update(period_min=float(self.ui.period_min.text()),
-                          period_max=float(self.ui.period_max.text()))
+                      lambda_min=lambda_min,
+                      lambda_max=lambda_max)
+        if is_periodic:
+            kwargs.update(period_min=lambda_min,
+                          period_max=lambda_max)
         # TODO: tmp
         kwargs.update({'is_state': True})
         return kwargs
@@ -229,14 +265,18 @@ class StateController(QDialogController, CreateObjectDialog):
         self.ui.period_info.setEnabled(self.ui.is_periodic.isChecked())
 
     def toggle_enabled_ok(self):
-        dct = self._get_kwargs_from_ui(self)
-        is_named = bool(dct['name'])
-        if dct['class_name'] == "CVDefinedVolume":
-            acceptable_lambdas = (dct['lambda_min'] < dct['lambda_max'])
-        elif dct['class_name'] == "PeriodicCVDefinedVolume":
-            acceptable_lambdas = (dct['period_min'] < dct['period_max'])
+        dct = self._get_kwargs_from_ui()
+        if not dct:
+            enabled = False
+        else:
+            is_named = bool(dct['name'])
+            if dct['class_name'] == "CVDefinedVolume":
+                acceptable_lambdas = (dct['lambda_min'] < dct['lambda_max'])
+            elif dct['class_name'] == "PeriodicCVDefinedVolume":
+                acceptable_lambdas = (dct['period_min'] < dct['period_max'])
 
-        enabled = is_named and acceptable_lambdas
+            enabled = is_named and acceptable_lambdas
+
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(enabled)
 
     def _default_nonperiodic(self):
@@ -279,9 +319,18 @@ class SimController(QDialog):
 
         # defaults
         self.update_sim_parameters()
+        self.toggle_enabled_ok()
 
         change_runtype.connect(self.tmp_disable)
         self.tmp_disable()
+
+    def update_after_add(self):
+        self.toggle_enabled_ok()
+
+    def toggle_enabled_ok(self):
+        enabled = len(self.states) >= 2
+        self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(enabled)
+
 
     def tmp_disable(self):
         self.ui.lammps_script.setText("script.lammps")
