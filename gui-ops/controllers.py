@@ -1,8 +1,10 @@
 from functools import partial
 
-from views import Ui_CVCreate, Ui_StateCreate, Ui_SimulationOverview
+from views import (Ui_CVCreate, Ui_StateCreate, Ui_SimulationOverview,
+                   Ui_CVsAndStates, Ui_SimDetails)
 from code_writers import (
-    CVCodeWriter, VolumeCodeWriter, StorageWriter, EngineWriter
+    CVCodeWriter, VolumeCodeWriter, StorageWriter, EngineWriter,
+    StringWrapper
 )
 from output_run_py import RunPyFile
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox
@@ -142,6 +144,14 @@ class QDialogController(QDialog):
     def update_after_add(self):
         pass  # implement when needed in subclasses
 
+    def input_errors(self):
+        return False
+
+    def toggle_enabled_ok(self):
+        enabled = not bool(self.input_errors())
+        self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(enabled)
+
+
 
 class CVController(QDialogController, CreateObjectDialog):
     comboBox_entries = {'LAMMPS Compute': "LAMMPSComputeCV"}
@@ -249,11 +259,14 @@ class StateController(QDialogController, CreateObjectDialog):
                 return {}
 
         periodic = 'Periodic' if is_periodic else ''
-        kwargs = dict(class_name=periodic + "CVDefinedVolume",
-                      collectivevariable=cv_bound_name,
-                      name=self.ui.name.text(),
-                      lambda_min=lambda_min,
-                      lambda_max=lambda_max)
+        kwargs = dict(
+            class_name=periodic + "CVDefinedVolume",
+            collectivevariable=cv_bound_name,
+            name=self.ui.name.text(),
+            lambda_min=StringWrapper("float('{}')".format(lambda_min)),
+            lambda_max=StringWrapper("float('{}')".format(lambda_max))
+        )
+        # explicit float calls above are sneaky trick to handle inf
         if is_periodic:
             kwargs.update(period_min=lambda_min,
                           period_max=lambda_max)
@@ -271,7 +284,10 @@ class StateController(QDialogController, CreateObjectDialog):
         else:
             is_named = bool(dct['name'])
             if dct['class_name'] == "CVDefinedVolume":
-                acceptable_lambdas = (dct['lambda_min'] < dct['lambda_max'])
+                # magic to strip this down to the relevant string
+                l_min = float(str(dct['lambda_min'])[7:-2])
+                l_max = float(str(dct['lambda_max'])[7:-2])
+                acceptable_lambdas = (l_min < l_max)
             elif dct['class_name'] == "PeriodicCVDefinedVolume":
                 acceptable_lambdas = (dct['period_min'] < dct['period_max'])
 
@@ -331,7 +347,6 @@ class SimController(QDialog):
         enabled = len(self.states) >= 2
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(enabled)
 
-
     def tmp_disable(self):
         self.ui.lammps_script.setText("script.lammps")
         self.ui.lammps_script.setEnabled(False)
@@ -373,3 +388,116 @@ class SimController(QDialog):
 
         super(SimController, self).accept()
 
+class SimDetailsController(QDialogController):
+    UIClass = Ui_SimDetails
+    def __init__(self, states=None, cvs=None, previous=None):
+        super(SimDetailsController, self).__init__()
+        self.states = states
+        if self.states is None:
+            self.states = {}
+
+        self.cvs = cvs
+        if self.cvs is None:
+            self.cvs = {}
+
+        self.ui = self.setup_ui()
+
+        change_runtype = self.ui.run_type.currentTextChanged
+        change_runtype.connect(self.update_sim_parameters)
+
+        self.update_sim_parameters()
+        change_runtype.connect(self.tmp_disable)
+        self.tmp_disable()
+
+    def tmp_disable(self):
+        self.ui.lammps_script.setText("script.lammps")
+        self.ui.lammps_script.setEnabled(False)
+        output_name = {
+            'Transition trajectory': 'trajectory.nc',
+            'Transition path sampling': 'tps.nc',
+            'Committor simulation': 'committor.nc'
+        }[self.ui.run_type.currentText()]
+        self.ui.output_file.setText(output_name)
+        self.ui.output_file.setEnabled(False)
+        self.ui.traj_init_traj.setEnabled(False)
+        self.ui.traj_init_frame.setEnabled(False)
+        self.ui.tps_init_traj.setEnabled(False)
+
+    def update_sim_parameters(self):
+        page = {
+            "Transition trajectory": self.ui.traj_params,
+            "Transition path sampling": self.ui.tps_params,
+            "Committor simulation": self.ui.committor_params
+        }[self.ui.run_type.currentText()]
+        self.ui.sim_parameters.setCurrentWidget(page)
+
+    def accept(self):
+        run_type = {
+            "Transition trajectory": "trajectory",
+            "Transition path sampling": "TPS",
+            "Committor simulation": "committor"
+        }[self.ui.run_type.currentText()]
+        storage = StorageWriter(filename=self.ui.output_file.text(),
+                                mode='w')
+        engine = EngineWriter(self.ui.lammps_script.text())
+        run_py = RunPyFile(run_type=run_type,
+                           engine=engine,
+                           cvs=list(self.cvs.values()),
+                           volumes=list(self.states.values()),
+                           other_writers=[storage])
+        with open("run.py", mode='w') as f:
+            run_py.write(f)
+
+        super(SimDetailsController, self).accept()
+
+
+class CVsAndStatesController(QDialogController):
+    UIClass = Ui_CVsAndStates
+    def __init__(self, states=None, cvs=None, parent=None):
+        super(CVsAndStatesController, self).__init__(parent)
+        self.states = states
+        if self.states is None:
+            self.states = {}
+
+        self.cvs = cvs
+        if self.cvs is None:
+            self.cvs = {}
+
+        self.ui = self.setup_ui()
+
+        self.cv_list_controller = ObjectListWidgetController(
+            controller=CVController,
+            attribute='cv',
+            get_name=lambda x: x.kwargs['name'],
+            ui_elem=self.ui.cv_list,
+            dct=self.cvs,
+            parent=self,
+            modal=True
+        )
+        self.cv_list_controller.make_connections(
+            add_button=self.ui.add_cv,
+            delete_button=self.ui.delete_cv
+        )
+
+        self.state_list_controller = ObjectListWidgetController(
+            controller=StateController,
+            attribute='state',
+            get_name=lambda x: x.name,
+            ui_elem=self.ui.state_list,
+            dct=self.states,
+            parent=self,
+            modal=True
+        )
+        self.state_list_controller.make_connections(
+            add_button=self.ui.add_state,
+            delete_button=self.ui.delete_state
+        )
+        self.toggle_enabled_ok()
+
+
+    def update_after_add(self):
+        self.toggle_enabled_ok()
+
+    def toggle_enabled_ok(self):
+        enabled = len(self.states) >= 2
+        self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(enabled)

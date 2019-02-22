@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Create Stable State</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
@@ -103,6 +103,9 @@
          <height>21</height>
         </rect>
        </property>
+       <property name="placeholderText">
+        <string>period max</string>
+       </property>
       </widget>
       <widget class="QLineEdit" name="period_min">
        <property name="geometry">
@@ -112,6 +115,9 @@
          <width>113</width>
          <height>21</height>
         </rect>
+       </property>
+       <property name="placeholderText">
+        <string>period min</string>
        </property>
       </widget>
      </widget>
@@ -124,6 +130,9 @@
         <height>21</height>
        </rect>
       </property>
+      <property name="placeholderText">
+       <string>cv min value</string>
+      </property>
      </widget>
      <widget class="QLineEdit" name="lambda_max">
       <property name="geometry">
@@ -133,6 +142,9 @@
         <width>113</width>
         <height>21</height>
        </rect>
+      </property>
+      <property name="placeholderText">
+       <string>cv max value</string>
       </property>
      </widget>
     </widget>

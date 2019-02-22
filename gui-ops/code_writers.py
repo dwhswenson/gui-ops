@@ -1,3 +1,16 @@
+import sys
+if sys.version_info > (3,):
+    basestring = str
+
+class StringWrapper(object):
+    """Hack to allow special string to be printed correctly"""
+    def __init__(self, string):
+        self.string = string
+
+    def __str__(self):
+        return self.string
+
+
 class NamedObjectCodeWriter(object):
     """Model to capture input from GUI and create OPS code.
 
@@ -41,7 +54,7 @@ class NamedObjectCodeWriter(object):
         return bind_str
 
     def _make_kwarg_str(self, key, value):
-        if isinstance(value, str) and key not in self.object_inputs:
+        if isinstance(value, basestring) and key not in self.object_inputs:
             value = '"' + value + '"'
         return "{key}={value}".format(key=key, value=value)
 
