@@ -2,6 +2,8 @@ import sys
 if sys.version_info > (3,):
     basestring = str
 
+from snippets import OPS_LOAD_TRAJ
+
 class StringWrapper(object):
     """Hack to allow special string to be printed correctly"""
     def __init__(self, string):
@@ -10,6 +12,11 @@ class StringWrapper(object):
     def __str__(self):
         return self.string
 
+class BlankLineCodeWriter(object):
+    """Stand-in when we don't actually want to write code"""
+    @property
+    def code(self):
+        return ""
 
 class NamedObjectCodeWriter(object):
     """Model to capture input from GUI and create OPS code.
@@ -126,6 +133,12 @@ class CVCodeWriter(NamedObjectCodeWriter):
         self.name = None
         self.base = "ops_lammps"  #TODO: modify this in the controller?
 
+    @property
+    def code(self):
+        code = super(CVCodeWriter, self).code + "\n"
+        code += self.bound_name + ".enable_diskcache()"
+        return code
+
 
 class VolumeCodeWriter(NamedObjectCodeWriter):
     object_inputs = ['collectivevariable']
@@ -161,6 +174,21 @@ class EngineWriter(object):
         lines += str(self.options) + ")\n"
         return lines
 
+
+class InitialTrajectoryWriter(object):
+    def __init__(self, trajectory_file, traj_num=0, top_file=None):
+        self.trajectory_file = trajectory_file
+        self.traj_num = traj_num
+        self.top_file = top_file
+
+    @property
+    def code(self):
+        ext = self.trajectory_file.rsplit('.', 1)[-1]
+        extract = {
+            'nc': OPS_LOAD_TRAJ.format(traj_file=self.trajectory_file,
+                                       traj_num=self.traj_num),
+        }[ext]  # can add support for other things later
+        return extract + "\n"
 
 class RandomizerWriter(object):
     pass

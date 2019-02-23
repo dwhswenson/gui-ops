@@ -4,7 +4,7 @@ from views import (Ui_CVCreate, Ui_StateCreate, Ui_SimulationOverview,
                    Ui_CVsAndStates, Ui_SimDetails)
 from code_writers import (
     CVCodeWriter, VolumeCodeWriter, StorageWriter, EngineWriter,
-    StringWrapper
+    StringWrapper, BlankLineCodeWriter, InitialTrajectoryWriter
 )
 from output_run_py import RunPyFile
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox
@@ -36,7 +36,7 @@ class AddObjectFromButton(object):
         whether the dialog should be modal
     """
     def __init__(self, controller, attribute, get_name, ui_elem, dct,
-                 parent=None, modal=False):
+                 parent=None, modal=False, hidden_ui_elems=None):
         self.controller = controller
         self.attribute = attribute
         self.get_name = get_name
@@ -44,6 +44,9 @@ class AddObjectFromButton(object):
         self.dct = dct
         self.parent = parent
         self.modal = modal
+        if hidden_ui_elems is None:
+            hidden_ui_elems = []
+        self.hidden_ui_elems = hidden_ui_elems
 
     # TODO: abstract this to do different kinds; use a string input
     # 'modal_dialog', 'dialog', 'stack_page', ...
@@ -51,6 +54,9 @@ class AddObjectFromButton(object):
         ctrl = self.controller(parent=self.parent, **kwargs)
         ctrl.setModal(self.modal)
         ctrl.show()
+        for elem in self.hidden_ui_elems:
+            ui_elem = getattr(ctrl.ui, elem)
+            ui_elem.setVisible(False)
         ctrl.exec_()
         return ctrl
 
@@ -78,9 +84,10 @@ class ObjectListWidgetController(AddObjectFromButton):
     """
     """
     def __init__(self, controller, attribute, get_name, ui_elem, dct,
-                 parent=None, modal=False):
+                 parent=None, modal=False, hidden_ui_elems=None):
         super(ObjectListWidgetController, self).__init__(
-            controller, attribute, get_name, ui_elem, dct, parent, modal
+            controller, attribute, get_name, ui_elem, dct, parent, modal,
+            hidden_ui_elems
         )
         self.delete_button = None
 
@@ -359,7 +366,10 @@ class SimController(QDialog):
         self.ui.output_file.setEnabled(False)
         self.ui.traj_init_traj.setEnabled(False)
         self.ui.traj_init_frame.setEnabled(False)
+        self.ui.tps_init_traj.setText("trajectory.nc")
         self.ui.tps_init_traj.setEnabled(False)
+        self.ui.tps_traj_idx.setEnabled(False)
+        self.ui.tps_top_file.setEnabled(False)
 
     def update_sim_parameters(self):
         page = {
@@ -421,7 +431,10 @@ class SimDetailsController(QDialogController):
         self.ui.output_file.setEnabled(False)
         self.ui.traj_init_traj.setEnabled(False)
         self.ui.traj_init_frame.setEnabled(False)
+        self.ui.tps_init_traj.setText("trajectory.nc")
         self.ui.tps_init_traj.setEnabled(False)
+        self.ui.tps_traj_idx.setEnabled(False)
+        self.ui.tps_top_file.setEnabled(False)
 
     def update_sim_parameters(self):
         page = {
@@ -432,11 +445,23 @@ class SimDetailsController(QDialogController):
         self.ui.sim_parameters.setCurrentWidget(page)
 
     def accept(self):
+        run_type_text = self.ui.run_type.currentText()
         run_type = {
             "Transition trajectory": "trajectory",
             "Transition path sampling": "TPS",
             "Committor simulation": "committor"
-        }[self.ui.run_type.currentText()]
+        }[run_type_text]
+
+        init_cond_writer = {
+            "Transition trajectory": BlankLineCodeWriter(),
+            "Transition path sampling": InitialTrajectoryWriter(
+                trajectory_file=self.ui.tps_init_traj.text(),
+                traj_num=self.ui.tps_traj_idx.value(),
+                top_file=self.ui.tps_top_file.text()
+            ),
+            "Committor simulation": BlankLineCodeWriter()
+        }[run_type_text]
+
         storage = StorageWriter(filename=self.ui.output_file.text(),
                                 mode='w')
         engine = EngineWriter(self.ui.lammps_script.text())
@@ -444,7 +469,7 @@ class SimDetailsController(QDialogController):
                            engine=engine,
                            cvs=list(self.cvs.values()),
                            volumes=list(self.states.values()),
-                           other_writers=[storage])
+                           other_writers=[storage, init_cond_writer])
         with open("run.py", mode='w') as f:
             run_py.write(f)
 
@@ -486,18 +511,33 @@ class CVsAndStatesController(QDialogController):
             ui_elem=self.ui.state_list,
             dct=self.states,
             parent=self,
-            modal=True
+            modal=True,
+            hidden_ui_elems=['addCV']
         )
         self.state_list_controller.make_connections(
             add_button=self.ui.add_state,
             delete_button=self.ui.delete_state
         )
-        self.toggle_enabled_ok()
 
+        cancel = self.ui.buttonBox.button(QDialogButtonBox.Cancel)
+        cancel.setDefault(False)
+        cancel.setAutoDefault(False)
+        self.toggle_enabled_ok()
+        self.toggle_add_state()
+        cancel.clearFocus()
+
+    def toggle_add_state(self):
+        enabled = len(self.cvs) > 0
+        self.ui.add_state.setEnabled(enabled)
 
     def update_after_add(self):
         self.toggle_enabled_ok()
+        self.toggle_add_state()
 
     def toggle_enabled_ok(self):
         enabled = len(self.states) >= 2
-        self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(enabled)
+        ok_button = self.ui.buttonBox.button(QDialogButtonBox.Ok)
+        ok_button.setEnabled(enabled)
+        if enabled:
+            ok_button.setDefault(True)
+

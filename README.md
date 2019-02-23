@@ -26,10 +26,10 @@ although the resulting OPS file will require the branch for LAMMPS support.
 
 ### Tests
 
-Tests use:
+Tests are in development, and are planned to use:
 
 * pytest
 * pytest-qt
 * pytest-bdd
 
-Install all of these (pip-installable) and run ???
+After these are installed, the tests can be run with ???TODO???

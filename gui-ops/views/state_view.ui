@@ -196,7 +196,11 @@
   <tabstop>name</tabstop>
   <tabstop>scrollArea</tabstop>
   <tabstop>collectivevariable</tabstop>
+  <tabstop>lambda_min</tabstop>
+  <tabstop>lambda_max</tabstop>
   <tabstop>is_periodic</tabstop>
+  <tabstop>period_min</tabstop>
+  <tabstop>period_max</tabstop>
   <tabstop>addCV</tabstop>
  </tabstops>
  <resources/>

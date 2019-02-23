@@ -148,6 +148,14 @@
    </property>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>cv_list</tabstop>
+  <tabstop>delete_cv</tabstop>
+  <tabstop>add_cv</tabstop>
+  <tabstop>state_list</tabstop>
+  <tabstop>delete_state</tabstop>
+  <tabstop>add_state</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

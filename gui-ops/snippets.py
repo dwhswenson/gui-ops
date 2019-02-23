@@ -1,5 +1,11 @@
 TPS_SETUP = """
-network = paths.TPSNetwork(states)
+if len(states) > 2:
+    initial_states = states
+    final_states = states
+else:
+    initial_states, final_states = states
+
+network = paths.TPSNetwork(initial_states, final_states)
 scheme = paths.OneWayShootingMoveScheme(network, engine)
 
 initial_conditions = scheme.initial_conditions_from_trajectories(trajectory)
@@ -45,6 +51,7 @@ class TrajectorySimulation(paths.PathSimulator):
             self.storage.save(self.engine)
             self.storage.save(self.states)
             self.storage.save(self.ensemble)
+            self.storage.sync_all()
 
 sim = TrajectorySimulation(storage, states, engine)
 """
@@ -54,4 +61,7 @@ if __name__ == "__main__":
     sim.run({n_sim_steps})
 """
 
-
+OPS_LOAD_TRAJ = """
+inp_traj_file = paths.Storage("{traj_file}", mode='r')
+trajectory = inp_traj_file.trajectories[{traj_num}]
+"""
