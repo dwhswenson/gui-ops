@@ -15,7 +15,7 @@ sim = paths.PathSampling(
     move_scheme=scheme,
     sample_set=initial_conditions
 )
-"""
+"""[1:-1]
 
 
 COMMITTOR_SETUP = """
@@ -23,7 +23,7 @@ sim = paths.CommittorSimulation(
     storage=storage,
     states=states,
     randomizer=randomizer,
-    initial_snapshots=initial_conditions
+    initial_snapshots=initial_conditions)
 """
 
 TRAJECTORY_SETUP = """
@@ -64,4 +64,4 @@ if __name__ == "__main__":
 OPS_LOAD_TRAJ = """
 inp_traj_file = paths.Storage("{traj_file}", mode='r')
 trajectory = inp_traj_file.trajectories[{traj_num}]
-"""
+"""[1:-1]

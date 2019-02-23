@@ -462,6 +462,17 @@ class SimDetailsController(QDialogController):
             "Committor simulation": BlankLineCodeWriter()
         }[run_type_text]
 
+        n_sim_steps = {
+            "Transition trajectory": '',
+            "Transition path sampling": int(self.ui.n_steps.text()),
+            "Committor simulation": "TODO"
+        }[run_type_text]
+        # TODO: protect against stupid values in n_steps (like non-int)
+
+        extra_info_dict = {
+            'n_sim_steps': n_sim_steps
+        }
+
         storage = StorageWriter(filename=self.ui.output_file.text(),
                                 mode='w')
         engine = EngineWriter(self.ui.lammps_script.text())
@@ -469,7 +480,8 @@ class SimDetailsController(QDialogController):
                            engine=engine,
                            cvs=list(self.cvs.values()),
                            volumes=list(self.states.values()),
-                           other_writers=[storage, init_cond_writer])
+                           other_writers=[storage, init_cond_writer],
+                           extra_info_dict=extra_info_dict)
         with open("run.py", mode='w') as f:
             run_py.write(f)
 

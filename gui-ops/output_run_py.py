@@ -1,12 +1,14 @@
 from snippets import TPS_SETUP, COMMITTOR_SETUP, TRAJECTORY_SETUP, MAIN_RUN
 
 class RunPyFile(object):
-    def __init__(self, run_type, cvs, volumes, engine, other_writers=None):
+    def __init__(self, run_type, cvs, volumes, engine, other_writers=None,
+                 extra_info_dict=None):
         self.run_type = run_type
         self.cvs = cvs
         self.engine = engine
         self.volumes = volumes
         self.other_writers = other_writers
+        self.extra_info_dict = extra_info_dict
 
     @property
     def code(self):
@@ -34,8 +36,8 @@ class RunPyFile(object):
         # TODO: get n_sim_steps
         n_sim_steps = ""
 
-        run_py += sim_setup
-        run_py += MAIN_RUN.format(n_sim_steps=n_sim_steps)
+        run_py += sim_setup.format(**self.extra_info_dict)
+        run_py += MAIN_RUN.format(**self.extra_info_dict)
 
         return run_py
 

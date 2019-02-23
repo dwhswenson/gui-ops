@@ -39,7 +39,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="traj_params">
     <widget class="QLabel" name="label_4">
@@ -198,13 +198,13 @@
       <string>MC Steps:</string>
      </property>
     </widget>
-    <widget class="QSpinBox" name="n_steps">
+    <widget class="QLineEdit" name="n_steps">
      <property name="geometry">
       <rect>
        <x>110</x>
        <y>130</y>
        <width>131</width>
-       <height>24</height>
+       <height>21</height>
       </rect>
      </property>
     </widget>
