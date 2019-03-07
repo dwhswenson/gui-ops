@@ -2,7 +2,7 @@ import sys
 if sys.version_info > (3,):
     basestring = str
 
-from snippets import OPS_LOAD_TRAJ
+from .snippets import OPS_LOAD_TRAJ
 
 class StringWrapper(object):
     """Hack to allow special string to be printed correctly"""

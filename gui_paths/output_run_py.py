@@ -1,4 +1,4 @@
-from snippets import TPS_SETUP, COMMITTOR_SETUP, TRAJECTORY_SETUP, MAIN_RUN
+from .snippets import TPS_SETUP, COMMITTOR_SETUP, TRAJECTORY_SETUP, MAIN_RUN
 
 class RunPyFile(object):
     def __init__(self, run_type, cvs, volumes, engine, other_writers=None,
