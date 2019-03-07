@@ -90,35 +90,34 @@ class NamedObjectCodeWriter(object):
                                       name_str=self._name_str)
         return code_str
 
-    def update(self, class_name, name, **kwargs):
-        self.__init__(class_name, name, **kwargs)
-
-    @classmethod
-    def from_object(cls, obj):
-        dct = obj.to_dict()
-        try:
-            name = dct.pop('name')
-        except KeyError:
-            name = None
-
-        class_name = obj.__class__.__name__
-        obj = cls(class_name, name, **dct)
-        obj.object = obj
-        return cls(class_name, name, **dct)
-
-    @property
-    def object(self):
-        if self._object is not None:
-            return self._object
-        # TODO: add object creation here
-
-    @object.setter
-    def object(self, value):
-        if self._object is None:
-            self._object = value
-        elif self._object != value:
-            raise RuntimeError()
-        # else we're setting object to what it already is; pass silently
+# TODO: this section deals with interaction with actual OPS objects; this
+# might be interesting in the future, but holding off on it now
+#    @classmethod
+#    def from_object(cls, obj):
+#        dct = obj.to_dict()
+#        try:
+#            name = dct.pop('name')
+#        except KeyError:
+#            name = None
+#
+#        class_name = obj.__class__.__name__
+#        obj = cls(class_name, name, **dct)
+#        obj.object = obj
+#        return cls(class_name, name, **dct)
+#
+#    @property
+#    def object(self):
+#        if self._object is not None:
+#            return self._object
+#        # TODO: add object creation here
+#
+#    @object.setter
+#    def object(self, value):
+#        if self._object is None:
+#            self._object = value
+#        elif self._object != value:
+#            raise RuntimeError()
+#        # else we're setting object to what it already is; pass silently
 
 
 class CVCodeWriter(NamedObjectCodeWriter):

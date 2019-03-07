@@ -1,12 +1,12 @@
 from functools import partial
 
-from views import (Ui_CVCreate, Ui_StateCreate, Ui_SimulationOverview,
+from .views import (Ui_CVCreate, Ui_StateCreate, Ui_SimulationOverview,
                    Ui_CVsAndStates, Ui_SimDetails)
-from code_writers import (
+from .code_writers import (
     CVCodeWriter, VolumeCodeWriter, StorageWriter, EngineWriter,
     StringWrapper, BlankLineCodeWriter, InitialTrajectoryWriter
 )
-from output_run_py import RunPyFile
+from .output_run_py import RunPyFile
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox
 
 from PyQt5.QtWidgets import QListWidget, QComboBox

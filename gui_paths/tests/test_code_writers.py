@@ -20,9 +20,11 @@ class TestCVCodeWriter(AbstractCodeWriterTester):
                                    bar=1.0,
                                    baz="qux",
                                    quux=[1.0, 2.0, 3.0])
+        self.writer.base = "paths"
         self.second = CVCodeWriter(name="extra",
                                    class_name="OtherClassCV",
                                    f="blah")
+        self.writer.base = "paths"
         self.expected_bound_name_1 = "cv_1"
         self.expected_bound_name_2 = "cv_2"
 
@@ -36,8 +38,9 @@ class TestCVCodeWriter(AbstractCodeWriterTester):
         }
         kwarg_part = ", ".join(kwarg_strs[name]
                                for name in self.writer.kwargs)
+        diskcache_1 = "cv_1.enable_diskcache()"
         self.expected_code = ('cv_1 = paths.SomeClassOfCV(' + kwarg_part
-                              + ')')
+                              + ')' + "\n" + diskcache_1)
 
 class TestVolumeCodeWriter(AbstractCodeWriterTester):
     def setup(self):
