@@ -10,18 +10,21 @@ well as TPS.
 ### Installation
 
 Install PyQt5. Due to some issues between pip and conda naming conventions, you
-should do this before anything else.
+should do this before anything else. (`conda install pyqt` or `pip install
+PyQt5`; note that conda users should *not* pip install this, or else things
+will break -- this is exactly why you need to manually install it.)
 
 Next you will need to create Python files from the `.ui` files. Try this bit
 of bash magic: 
 
 ```bash
-for file in gui-ops/views/*ui; do pyuic5 "$file" -o "${file%.ui}.py"; done
+for file in gui_paths/views/*ui; do pyuic5 "$file" -o "${file%.ui}.py"; done
 ```
 
 Then install using `pip install .` from the directory containing `setup.py`.
-(Note: for now the scripts still need to be run by calling `python main.py`;
-this will be changed at some point in the near future.)
+(Note: for now the scripts still need to be run by calling `python main.py`
+from the directory with `main.py`; this will be changed at some point in the
+near future.)
 
 ### Requirements
 
